@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dark Museum | Fixed Links</title>
+    <style>
+        :root {
+            --bg-dark: #0a0a0a;
+            --card-bg: #151515;
+            --gold: #c5a059;
+            --text-gray: #a0a0a0;
+            --frame-border: #1f1f1f;
+        }
+
+        * { box-sizing: border-box; transition: all 0.3s ease; }
+        
+        body, html { 
+            margin: 0; padding: 0; min-height: 100vh; 
+            font-family: "Georgia", serif; 
+            background: var(--bg-dark); 
+            color: #fff;
+            overflow-x: hidden; 
+        }
+
+        body::before {
+            content: '';
+            position: fixed; inset: 0;
+            background: radial-gradient(circle at 50% 50%, transparent 10%, rgba(0,0,0,0.8) 100%);
+            pointer-events: none; z-index: 1;
+        }
+
+        /* --- КАПЧА --- */
+        #captcha-screen {
+            position: fixed; inset: 0;
+            background: #000; z-index: 9999;
+            display: flex; justify-content: center; align-items: center;
+            transition: opacity 0.8s ease;
+        }
+
+        .captcha-card {
+            background: var(--card-bg); padding: 40px;
+            border: 2px solid var(--frame-border);
+            outline: 1px solid var(--gold);
+            text-align: center; max-width: 450px; width: 90%;
+        }
+
+        .captcha-card h2 { color: #ff3e3e; font-size: 2.2rem; margin: 0; }
+
+        .hold-btn {
+            position: relative; width: 100%; height: 70px;
+            background: #222; border: 1px solid var(--gold);
+            cursor: pointer; overflow: hidden;
+            display: flex; justify-content: center; align-items: center;
+            font-weight: bold; user-select: none; color: #fff;
+        }
+
+        .progress-fill {
+            position: absolute; left: 0; top: 0; bottom: 0;
+            width: 0%; background: var(--gold);
+            transition: width 0.05s linear;
+        }
+
+        .btn-label { position: relative; z-index: 10; }
+
+        /* --- ГАЛЕРЕЯ --- */
+        #gallery-content {
+            display: none; padding: 60px 20px; opacity: 0;
+            transition: opacity 1s ease;
+        }
+
+        .museum-hall { max-width: 1400px; margin: 0 auto; position: relative; z-index: 2; }
+        
+        h1 {
+            text-align: center; font-size: clamp(1.5rem, 5vw, 3rem);
+            letter-spacing: 10px; margin-bottom: 70px; text-transform: uppercase;
+            color: var(--gold);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 60px 30px;
+        }
+
+        .exhibit { display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+        .exhibit:hover { transform: translateY(-10px); }
+
+        .frame {
+            width: 100%; aspect-ratio: 1/1;
+            background: #000; padding: 20px;
+            border: 12px solid var(--frame-border);
+            outline: 1px solid var(--gold);
+            box-shadow: 0 40px 70px rgba(0,0,0,0.8);
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden;
+        }
+
+        .canvas {
+            width: 100%; height: 100%;
+            background: #111;
+            display: flex; justify-content: center; align-items: center;
+            text-align: center; color: #444; font-style: italic;
+        }
+
+        .canvas img { width: 100%; height: 100%; object-fit: cover; }
+
+        .plaque {
+            margin-top: 20px; background: var(--card-bg);
+            padding: 8px 25px; border-bottom: 2px solid var(--gold);
+            font-weight: bold; color: var(--gold);
+        }
+
+        /* --- УТКА --- */
+        #duck-trigger {
+            position: fixed; bottom: 20px; right: 20px;
+            background: none; border: none;
+            font-size: 60px; cursor: pointer; z-index: 1000;
+        }
+        
+        #duck-trigger:hover { transform: scale(1.2) rotate(10deg); }
+
+        .falling-duck {
+            position: fixed; top: -100px; font-size: 50px;
+            z-index: 999; pointer-events: none;
+            animation: fall linear forwards;
+        }
+        @keyframes fall { to { transform: translateY(120vh) rotate(720deg); } }
+
+        /* --- МОДАЛКА --- */
+        .modal {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.98);
+            z-index: 10000; display: none; justify-content: center; align-items: center;
+        }
+
+        .modal.active { display: flex; }
+
+        .modal-content {
+            position: relative; width: 95%; max-width: 1000px; height: 80vh;
+            border: 5px solid var(--frame-border); outline: 1px solid var(--gold);
+            background: #000; display: flex; justify-content: center; align-items: center;
+        }
+
+        .modal-view { width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; }
+        .modal-view img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        .modal-view span { color: var(--gold); font-size: 1.5rem; text-align: center; padding: 20px; }
+
+        .nav-btn {
+            position: absolute; top: 50%; transform: translateY(-50%);
+            background: rgba(0,0,0,0.5); color: var(--gold);
+            border: 1px solid var(--gold); width: 50px; height: 50px;
+            border-radius: 50%; cursor: pointer; font-size: 20px;
+        }
+
+        .prev { left: 10px; }
+        .next { right: 10px; }
+        .close { position: absolute; top: -50px; right: 0; color: var(--gold); background: none; border: none; font-size: 40px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div id="captcha-screen">
+        <div class="captcha-card">
+            <h2>ВЫ НЕ ВИТЯ!</h2>
+            <p>ПРОЙДИ ПРОВЕРКУ СУКА</p>
+            <div class="hold-btn" onmousedown="startHold()" onmouseup="stopHold()" onmouseleave="stopHold()" ontouchstart="startHold()" ontouchend="stopHold()">
+                <div class="progress-fill" id="fill"></div>
+                <span class="btn-label">ЗАЖМИ И ДЕРЖИ</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="gallery-content">
+        <div class="museum-hall">
+            <h1>Dark Gallery</h1>
+            <div class="grid" id="mainGrid"></div>
+        </div>
+        <button id="duck-trigger" onclick="duckRain()">🦆</button>
+    </div>
+
+    <div class="modal" id="modal">
+        <button class="close" onclick="closeModal()">&times;</button>
+        <div class="modal-content">
+            <button class="nav-btn prev" onclick="changeSlide(-1)">&#10094;</button>
+            <div class="modal-view" id="modalView"></div>
+            <button class="nav-btn next" onclick="changeSlide(1)">&#10095;</button>
+        </div>
+    </div>
+
+    <script>
+        // --- ВСТАВЛЯЙ ССЫЛКИ СЮДА ---
+        const images = [
+            "https://i.postimg.cc/Prt5LPQh/nk-P56Qaw-MLD5Vm4Uwd-Ie-AKAKar-QJh-Dnry-Zr-WDDo-Sjx-Nc-XQDv-Ku-M9EFYskmsvi35C6ON3d-Qb4E9gkk5nlon-RUb.jpg", 
+            "https://i.postimg.cc/gkY2wnHp/HLj-BG2UXRe-JKeh-Wb-Rb-Mq2Qct-CNym-Nelh-Z1YSWj-Lol-Kv-Es-Vh-W4Qj-Tp-C-s-NK5H3-Cs-Fswi-Sxx-Wuw-G9u-RU.jpg", 
+            "https://i.postimg.cc/jdsSWL4Y/9j4YQCZ8Bamnqhp-Ak-Ko-BLIMHSOZBXog2R8w-QRBCL8ei-V4Nk-FAp-VChf-Obf-Qrrtcjyl7Jh-PLUum3fg-K0I-Yu-BCZw-R.jpg", 
+            "https://i.postimg.cc/v87mHW97/o6FBv-F3Jjc-ZBJO4Gx-RXSi-Mk0Lw0y3k4e6x-YCrpofd-Z1rfslg-Cb-Xl-IJPuljiepr-GGviqy7mg-DAgw6-p-O96El-DNr.jpg", 
+            "https://i.postimg.cc/1R0z5p6H/q9C9OKPi-Fw0TAO24j7J47Kdk-A4F1YZl-UZEy-SCq-D3c-Vlg-HEl-AZb-Mpl-Fixh-F-Pcy2ZTYsm-GVp-Ba8TVUr0Xwj-LNDe.jpg", 
+            "https://i.postimg.cc/Y2NSq1gx/VYa-Sxo-Axqr-H9KA7i-Tc1UUL3-e-Tf4x1tg-ZDZx-uh3jjl-HMd6ga8Tf-Dkctr-Bi5bde-LZTFk5m-Fb-BAS-Vw-Intx-YB5X.jpg", 
+            "https://i.postimg.cc/CMCKLjDv/Bez-nazvania183-20260420130137.png", 
+            "https://i.postimg.cc/G3PphkYf/Bez-nazvania183-20260420130311.png", 
+            "https://i.postimg.cc/zDwfXnK1/Bez-nazvania183-20260420131038.png", 
+            "https://i.postimg.cc/YqpC4hfJ/Bez-nazvania183-20260420132548.png", 
+            "https://i.postimg.cc/2jd584hC/Bez-nazvania184-20260421085104.png", 
+            "https://i.postimg.cc/zDwfXnK5/Bez-nazvania185-20260421094925.png"
+        ];
+
+        let holdTimer, progress = 0, currentIdx = 0;
+
+        // Логика отрисовки (ВАЖНО ДЛЯ ФОТО)
+        function renderContent(data) {
+            if (data.trim().startsWith('http')) {
+                return `<img src="${data}" alt="Art">`;
+            }
+            return `<span>${data}</span>`;
+        }
+
+        // Капча
+        function startHold() {
+            holdTimer = setInterval(() => {
+                progress += 2;
+                document.getElementById('fill').style.width = progress + "%";
+                if (progress >= 100) { clearInterval(holdTimer); unlock(); }
+            }, 30);
+        }
+        function stopHold() { if (progress < 100) { clearInterval(holdTimer); progress = 0; document.getElementById('fill').style.width = "0%"; } }
+        function unlock() {
+            document.getElementById('captcha-screen').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('captcha-screen').style.display = 'none';
+                document.getElementById('gallery-content').style.display = 'block';
+                setTimeout(() => document.getElementById('gallery-content').style.opacity = '1', 50);
+            }, 800);
+        }
+
+        // Рендер сетки
+        const grid = document.getElementById('mainGrid');
+        images.forEach((item, i) => {
+            const ex = document.createElement('div');
+            ex.className = 'exhibit';
+            ex.innerHTML = `<div class="frame"><div class="canvas">${renderContent(item)}</div></div><div class="plaque">№${i+1}</div>`;
+            ex.onclick = () => openModal(i);
+            grid.appendChild(ex);
+        });
+
+        // Модалка
+        function openModal(idx) { currentIdx = idx; updateModal(); document.getElementById('modal').classList.add('active'); }
+        function closeModal() { document.getElementById('modal').classList.remove('active'); }
+        function changeSlide(s) { currentIdx = (currentIdx + s + images.length) % images.length; updateModal(); }
+        function updateModal() { document.getElementById('modalView').innerHTML = renderContent(images[currentIdx]); }
+
+        // Утки
+        function duckRain() {
+            for(let i=0; i<60; i++) {
+                setTimeout(() => {
+                    const duck = document.createElement('div');
+                    duck.className = 'falling-duck';
+                    duck.innerHTML = '🦆';
+                    duck.style.left = Math.random() * 100 + 'vw';
+                    duck.style.animationDuration = (Math.random() * 2 + 1) + 's';
+                    document.body.appendChild(duck);
+                    setTimeout(() => duck.remove(), 3000);
+                }, i * 70);
+            }
+        }
+
+        document.onkeydown = (e) => {
+            if(e.key === "ArrowLeft") changeSlide(-1);
+            if(e.key === "ArrowRight") changeSlide(1);
+            if(e.key === "Escape") closeModal();
+        };
+    </script>
+</body>
+</html>
